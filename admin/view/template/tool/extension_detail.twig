@@ -1,0 +1,698 @@
+{{ header }}{{ column_left }}
+<div id="content">
+    <div id="extension-group">
+        <div class="page-header">
+            <div class="container-fluid">
+                <div class="float-end">
+                </div>
+                <ol class="breadcrumb">
+                    {% for breadcrumb in breadcrumbs %}
+                        <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-header">
+                    {{ extension_group_detail }}
+                </div>
+                <div class="card-body">
+                    <form id="detail-extension-group-form" class="needs-validation mx-auto" novalidate>
+                        <div class="card-body">
+                            <div class="form-group row mb-4">
+                                <label class="col-sm-2 col-form-label" for="childZoneName">{{tb_name}}</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="childZoneName" placeholder="" v-model="extension_group_detail_info.name" disabled>
+                                </div>
+                            </div>
+                            <div class="form-group row mb-4">
+                                <label class="col-sm-2 col-form-label" for=""></label>
+                                <div class="col-sm-10">
+                                    <div class="form-row row">
+                                        <div class="form-group col-md-6">
+                                            <label class="col-form-label" >{{ extension_id }}</label>
+                                            <input type="number"  class="form-control" v-model="extension_group_detail_info.extension_id" disabled>
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label class="col-form-label" >{{ extension_download_id }}</label>
+                                            <input type="number"  class="form-control"  v-model="extension_group_detail_info.extension_download_id" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row mb-4">
+                                <label class="col-sm-2 col-form-label" for=""></label>
+                                <div class="col-sm-10">
+                                    <div class="form-row row">
+                                        <div class="form-group col-md-4">
+                                            <label class="col-form-label" >{{ package_name }}</label>
+                                            <input type="text"  class="form-control" v-model="extension_group_detail_info.package_name" disabled>
+
+                                        </div>
+                                        <div class="form-group col-md-4">
+                                            <label class="col-form-label" >{{ txt_code }}</label>
+                                            <input type="text"  class="form-control"  v-model="extension_group_detail_info.code" disabled >
+
+                                        </div>
+                                        <div class="form-group col-md-4">
+                                            <label class="col-form-label" >{{ version }}</label>
+                                            <input type="text"  class="form-control"  v-model="extension_group_detail_info.version" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-header">
+                    {{ button_filter }}
+                </div>
+                <div>
+                    <div class="card-body">
+                        <div class="form-group row mb-4">
+                            <label class="col-sm-2 col-form-label">{{ext_type}}</label>
+                            <div class="col-sm-10">
+                                <select class="form-select" v-model="extension_type">
+                                    <option value="">{{ txt_ext_type }}</option>
+                                    <option v-for="option in extension_group_detail_info.types" :value="option" v-text="option"></option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row mb-4">
+                            <label class="col-sm-2 col-form-label"></label>
+                            <div class="col-sm-10">
+                                <input type="checkbox" class="form-check-input" style="margin-right: 5px" v-model="extension_installed">
+                                <label class="form-check-label">{{ext_installed_only}}</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid"><!-- List of extension -->
+            <div class="card">
+                <div class="card-header">
+                    {{ extension_in_group }}
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover border-primary">
+                            <thead>
+                                <tr>
+                                    <td class="text-start">Code</td>
+                                    <td class="text-start">{{tb_ex_group_code}}</td>
+                                    <td class="text-start">Type</td>
+
+                                    <td class="text-end">{{ column_action }}</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="item in extension_group_detail_filter">
+                                    <template v-if="showItemOrNot(item)">
+                                        <td v-text="item.code"></td>
+                                        <td v-text="item.extension"></td>
+                                        <td v-text="item.type"></td>
+                                        <td>
+                                            <a @click="previewExtensionGroupDetail(item)" style="margin-right: 5px;" data-bs-toggle="tooltip" title="{{ button_view }}" class="btn btn-primary"><i class="fas fa-eye"></i></a>
+                                            <a v-bind:href="buildHref(item)" v-if="item.installed == true" style="margin-right: 5px;"  data-bs-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary pr-2"><i class="fas fa-pencil-alt"></i></a>
+                                            <a v-if="item.installed == false" @click="installExtensionGroupDetail(item)" style="margin-right: 5px;" data-bs-toggle="tooltip" title="{{ button_install }}" class="btn btn-success"><i class="fas fa-plus-circle"></i></a>
+                                            <a v-if="item.installed == true" @click="uninstallExtensionGroupDetail(item)" style="margin-right: 5px;" data-bs-toggle="tooltip" title="{{ button_uninstall }}" class="btn btn-warning"><i class="fas fa-minus-circle"></i></a>
+                                            <a @click="deleteExtensionGroupDetail(item)" data-bs-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fas fa-trash"></i></a>
+                                        </td>
+                                    </template>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <a @click="editExtensionGroupDetail(null)" class="card-link btn btn-primary"><i class="fas fa-plus"></i></a>
+                </div>
+            </div><!-- End list of extension -->
+        </div>
+        <div class="modal fade" id="extension-group-detail-form" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true"><!-- From -->
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content" v-if="current_item">
+                    <div class="modal-header"><!-- Begin Modal title -->
+                        <h5 v-if="current_item.isView == true" class="modal-title">{{txt_ext_view}}</h5>
+                        <h5 v-else-if="current_item.extension_id >= 0" class="modal-title">{{txt_ext_edit}}</h5>
+                        <h5 v-else-if="current_item.extension_id < 0" class="modal-title" >{{txt_ext_add}}</h5>
+                        <button type="button" @click="closeForm" class="btn-close" aria-label="Close" ></button>
+                    </div><!-- End Modal title -->
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <form id="detail-extension-group-form" class="needs-validation mx-auto" novalidate>
+                                <div class="card-body">
+                                    <div v-if="error.code > 0" class="alert alert-danger" role="alert" v-text="error.message"></div>
+                                    <div class="form-group row mb-4">
+                                        <label class="col-sm-2 col-form-label" for="childZoneName">{{txt_code}}</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" placeholder="" v-model="current_item.code" required v-bind:disabled="current_item.isView">
+                                            <div class="invalid-feedback">{{invalid_ext_code}}</div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-4" v-if="current_item.isView == false">
+                                        <label class="col-sm-2 col-form-label">{{extension_name}}</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" placeholder="" v-model="current_item.name" required v-bind:disabled="current_item.isView">
+                                            <div class="invalid-feedback"></div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-4">
+                                        <label class="col-sm-2 col-form-label" for=""></label>
+                                        <div class="col-sm-10">
+                                            <div class="form-row row">
+                                                <div class="form-group col-md-4">
+                                                    <label class="col-form-label" >{{ extension_id }}</label>
+                                                    <input type="number"  class="form-control" v-model="current_item.extension_id" disabled>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <label class="col-form-label" >{{ ext_type }}</label>
+                                                    <select class="form-select" v-model="current_item.type" v-bind:disabled="current_item.isView" required>
+                                                        <option disabled>{{ txt_ext_type }}</option>
+                                                        <option v-for="option in extension_group_detail_info.types" :value="option" v-text="option"></option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <label class="col-form-label" >{{ tb_ex_group_code }}</label>
+                                                    <input type="text"  class="form-control" v-model="current_item.extension" disabled>
+                                                    <div class="invalid-feedback">{{invalid_package_name}}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-4" v-if="current_item.path.controller.length" >
+                                        <label class="col-sm-2 col-form-label" for="">Controller</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" v-for="controller in current_item.path.controller" v-model="controller.path" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-4" v-if="current_item.path.model.length">
+                                        <label class="col-sm-2 col-form-label" for="">Model</label>
+                                        <div class="col-sm-10">
+                                            <input type="text"  class="form-control" v-for="model in current_item.path.model" v-model="model.path" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-4" v-if="current_item.path.view.length">
+                                        <label class="col-sm-2 col-form-label" for="">View</label>
+                                        <div class="col-sm-10">
+                                            <input type="text"  class="form-control" v-for="view in current_item.path.view"  v-model="view.path" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-4" v-if="current_item.path.language.length">
+                                        <label class="col-sm-2 col-form-label" for="">Language</label>
+                                        <div class="col-sm-10">
+                                            <input type="text"  class="form-control" v-for="language in current_item.path.language" v-model="language.path" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-4" v-if="current_item.path.system.length">
+                                        <label class="col-sm-2 col-form-label" for="">System</label>
+                                        <div class="col-sm-10">
+                                            <input type="text"  class="form-control" v-for="system in current_item.path.system" v-model="system.path" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-4" v-if="current_item.isView == false">
+                                        <label class="col-sm-2 col-form-label" for=""></label>
+                                        <div class="col-sm-5">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" v-model="current_item.addToFrontend">
+                                                <label class="form-check-label">{{txt_ext_frontend}}</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-5">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" v-model="current_item.addToSystem">
+                                                <label class="form-check-label">{{txt_ext_system}}</label>
+                                            </div>
+                                        </div>
+                                    </div>
+{#                                    <div class="form-group row mb-4" v-if="current_item.isView == false">#}
+{#                                        <label class="col-sm-2 col-form-label" for=""></label>#}
+{#                                        <div class="col-sm-5">#}
+{#                                            <div class="form-check">#}
+{#                                                <input type="checkbox" class="form-check-input" v-model="current_item.notCreateFile">#}
+{#                                                <label class="form-check-label">{{txt_ext_no_file}}</label>#}
+{#                                            </div>#}
+{#                                        </div>#}
+{#                                    </div>#}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" @click="closeForm" class="btn btn-secondary">
+                            <span v-if="current_item.isView == false">{{ button_cancel }}</span>
+                            <span v-else>{{ button_close }}</span>
+                        </button>
+                        <button @click="saveExtensionGroupDetail" v-if="current_item.isView == false" type="button" class="btn btn-primary">
+                            <span v-if="is_loading == false" >{{ button_save }}</span>
+                            <div v-if="is_loading" class="spinner-border spinner-border-sm" role="status"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div><!-- From -->
+        <!-- Modal -->
+        <div class="modal fade" id="delete-confirm-box" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">{{ txt_confirm }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {{ msg_del_ex_confirm }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_close }}</button>
+                        <button @click="deleteExtensionGroupDetailConfirm" type="button" class="btn btn-danger">{{ button_remove }}</button>
+                    </div>
+                </div>
+            </div>
+        </div><!-- End Modal -->
+        <div id="alert-container" class="position-fixed top-50 start-50"></div>
+    </div>
+</div>
+<script type="text/javascript" src="https://unpkg.com/vue@3"></script>
+<script>
+    const {
+        createApp
+    } = Vue
+    createApp({
+        data() {
+            return {
+                extension_group : [],
+                extension_group_detail: [],
+                extension_group_detail_info:{},
+                extension_type:'',
+                extension_installed: false,
+                current_item: null,
+                delete_item : null,
+                is_loading:false,
+                error : {
+                    code : 0,
+                    massage: ''
+                }
+            }
+        },
+        computed:{
+            extension_group_detail_filter(){
+                const type = this.extension_type
+                return this.extension_group_detail.filter(item => {
+                    return type == '' || item.type == type
+                })
+            }
+        },
+        watch:{
+            'current_item.type'(newValue){
+                if(this.current_item && this.current_item.isView == true || newValue == null) return
+                this.updateExtensionGroupDetailPath()
+            },
+            'current_item.addToFrontend'(newValue){
+                if(this.current_item && this.current_item.isView == true || newValue == null) return
+                this.updateExtensionGroupDetailPath()
+            },
+            'current_item.addToSystem'(newValue){
+                if(this.current_item && this.current_item.isView == true || newValue == null) return
+                this.updateExtensionGroupDetailPath()
+            },
+            'current_item.notCreateFile'(newValue){
+                if(this.current_item && this.current_item.isView == true || newValue == null) return
+                this.updateExtensionGroupDetailPath()
+            },
+            'current_item.code'(newValue){
+                if(this.current_item && this.current_item.isView == true || newValue == null) return
+                this.updateExtensionGroupDetailPath()
+            }
+        },
+        methods:{
+            buildHref:function(item){
+                return decodeURI(item.view.href.replace(/&amp;/g, '&'))
+            },
+            showItemOrNot:function(item){
+                return this.extension_installed == false || (item.installed == true && this.extension_installed == true)
+            },
+            showAlert:function(type, message){
+                const div = document.createElement('div');
+                div.className = "alert alert-"+type+" alert-dismissible fade show"
+                div.setAttribute('role', 'alert')
+                div.innerText = message
+                const btn = document.createElement('button')
+                btn.className = "btn-close"
+                btn.setAttribute('type', 'button')
+                btn.setAttribute('data-bs-dismiss', 'alert')
+                div.appendChild(btn)
+
+                document.getElementById('alert-container').appendChild(div)
+            },
+            validateForm:function(){
+                const form = document.getElementById('detail-extension-group-form')
+                const check = form.checkValidity()
+                if(form.className.search('was-validated') < 0){
+                    form.classList.add('was-validated')
+                }
+                return check
+            },
+            getExtensionGroupDetail:function(){
+                const obj = this
+                $.ajax({
+                    type: "POST",
+                    url : 'index.php?route=tool/extension|getExtensionGroupDetail&user_token={{ user_token }}',
+                    data: {
+                        code : '{{ code }}',
+                        extension_install_id : '{{ extension_install_id }}'
+                    },
+                    encode: true
+                }).done(function(data) {
+                    obj.extension_group_detail = data.data
+                    obj.extension_group_detail_info = data.detail
+                }).fail(function(msg) {
+
+                })
+            },
+            editExtensionGroupDetail:function(item){
+                if (item == null){
+                    this.current_item = {
+                        code : '',
+                        name : "",
+                        extension_install_id:this.extension_group_detail_info.extension_install_id,
+                        extension : this.extension_group_detail_info.code,
+                        extension_id : -1,
+                        isView: false,
+                        addToFrontend: false,
+                        addToSystem: false,
+                        notCreateFile:false,
+                        installed: false,
+                        uninstall: {
+                            href : ''
+                        },
+                        install: {
+                            href : ''
+                        },
+                        view: {
+                            href : ''
+                        },
+                        type: 'other',
+                        path :{
+                            controller: [],
+                            model: [],
+                            view:[],
+                            language: []
+                        }
+                    }
+                }
+
+                $('#extension-group-detail-form').modal('show')
+            },
+            updateExtensionGroupDetailPath: function(){
+                if(this.current_item == null || this.current_item.isView == true) return
+                if(this.current_item.code != '' && this.current_item.notCreateFile == false){
+                    if(this.current_item.addToFrontend == true){
+                        this.current_item.path.controller = [
+                            {
+                                extension_install_id: this.extension_group_detail_info.extension_install_id,
+                                path: 'opencart/admin/controller/'+this.current_item.type+'/'+this.current_item.code+'.php'
+                            },
+                            {
+                                extension_install_id: this.extension_group_detail_info.extension_install_id,
+                                path: 'opencart/catalog/controller/'+this.current_item.type+'/'+this.current_item.code+'.php'
+                            }
+                        ]
+
+                        this.current_item.path.model = [
+                            {
+                                extension_install_id: this.extension_group_detail_info.extension_install_id,
+                                path: 'opencart/admin/model/'+this.current_item.type+'/'+this.current_item.code+'.php'
+                            },
+                            {
+                                extension_install_id: this.extension_group_detail_info.extension_install_id,
+                                path: 'opencart/catalog/model/'+this.current_item.type+'/'+this.current_item.code+'.php'
+                            }
+                        ]
+
+                        this.current_item.path.view = [
+                            {
+                                extension_install_id: this.extension_group_detail_info.extension_install_id,
+                                path: 'opencart/admin/view/template/'+this.current_item.type+'/'+this.current_item.code+'.twig'
+                            },
+                            {
+                                extension_install_id: this.extension_group_detail_info.extension_install_id,
+                                path: 'opencart/catalog/view/template/'+this.current_item.type+'/'+this.current_item.code+'.twig'
+                            }
+                        ]
+
+                        this.current_item.path.language = [
+                            {
+                                extension_install_id: this.extension_group_detail_info.extension_install_id,
+                                path: 'opencart/admin/language/en-gb/'+this.current_item.type+'/'+this.current_item.code+'.php'
+                            },
+                            {
+                                extension_install_id: this.extension_group_detail_info.extension_install_id,
+                                path: 'opencart/catalog/language/en-gb/'+this.current_item.type+'/'+this.current_item.code+'.php'
+                            }
+                        ]
+                    }
+                    else {
+                        this.current_item.path.controller = [
+                            {
+                                extension_install_id: this.extension_group_detail_info.extension_install_id,
+                                path: 'opencart/admin/controller/'+this.current_item.type+'/'+this.current_item.code+'.php'
+                            }
+                        ]
+
+                        this.current_item.path.model = [
+                            {
+                                extension_install_id: this.extension_group_detail_info.extension_install_id,
+                                path: 'opencart/admin/model/'+this.current_item.type+'/'+this.current_item.code+'.php'
+                            }
+                        ]
+
+                        this.current_item.path.view = [
+                            {
+                                extension_install_id: this.extension_group_detail_info.extension_install_id,
+                                path: 'opencart/admin/view/template/'+this.current_item.type+'/'+this.current_item.code+'.twig'
+                            }
+                        ]
+
+                        this.current_item.path.language = [
+                            {
+                                extension_install_id: this.extension_group_detail_info.extension_install_id,
+                                path: 'opencart/admin/language/en-gb/'+this.current_item.type+'/'+this.current_item.code+'.php'
+                            }
+                        ]
+                    }
+
+                    if(this.current_item.addToSystem == true){
+                        this.current_item.path.system = [
+                            {
+                                extension_install_id: this.extension_group_detail_info.extension_install_id,
+                                path: 'opencart/system/config/'+this.current_item.code+'.php'
+                            },
+                            {
+                                extension_install_id: this.extension_group_detail_info.extension_install_id,
+                                path: 'opencart/system/library/'+this.current_item.code+'.php'
+                            },
+                            {
+                                extension_install_id: this.extension_group_detail_info.extension_install_id,
+                                path: 'opencart/system/helper/'+this.current_item.code+'.php'
+                            }
+                        ]
+                    }
+                    else {
+                        this.current_item.path.system = []
+                    }
+                }
+                else {
+                    this.current_item.path.controller = []
+
+                    this.current_item.path.model = []
+
+                    this.current_item.path.view = []
+
+                    this.current_item.path.language = []
+
+                    this.current_item.path.system = []
+                }
+            },
+            previewExtensionGroupDetail:function(item){
+                this.current_item = item
+                console.log(this.current_item)
+                this.current_item.isView = true
+                $('#extension-group-detail-form').modal('show')
+            },
+            editExtensionGroup: function(item){
+                if(item == null){
+                    this.current_item = {
+                        extension_install_id:-1,
+                        extension_id:0,
+                        extension_download_id:0,
+                        name:'',
+                        package_name:'',
+                        code:'',
+                        version:'1.0',
+                        author:'',
+                        link:'',
+                        status:0
+                    }
+                }
+                else this.current_item = item
+                $('#extension-group-detail-form').modal('show')
+            },
+            deleteExtensionGroupDetail:function(item){
+                this.item_to_delete = item
+                $('#delete-confirm-box').modal('show')
+            },
+            deleteExtensionGroupDetailConfirm:function(){
+                const self = this
+                const item = self.item_to_delete
+                if(item == null) return
+                self.is_loading = true
+                //console.log(self.extension_group_detail)
+                $.ajax({
+                    type: "POST",
+                    url : 'index.php?route=tool/extension|deleteExtension&user_token={{ user_token }}',
+                    data: {
+                        code : item.code,
+                        type:item.type,
+                        extension: self.extension_group_detail_info.code
+                    },
+                    encode: true
+                }).done(function(data) {
+                    self.is_loading = false
+                    if(data.error){
+                        self.error.code = data.error.code
+                        self.error.message = data.error.msg
+                    }
+                    else {
+                        //self.current_item.extension_id = data.data.id
+                        //self.extension_group_detail.push(self.current_item)
+                        //self.closeForm()
+                        self.extension_group_detail = self.extension_group_detail.filter(ele => ele.code != item.code)
+                    }
+                    self.closeForm()
+                }).fail(function(msg) {
+                    console.log(msg.responseText)
+                    self.is_loading = false
+                    self.closeForm()
+                })
+            },
+            saveExtensionGroupDetail: function(){
+                const self = this
+                var paths = []
+                if(this.current_item.path.controller.length > 0) {
+                    if(self.current_item.addToFrontend){
+                        paths.push(this.current_item.path.controller[0].path)
+                        paths.push(this.current_item.path.controller[1].path)
+                        paths.push(this.current_item.path.model[0].path)
+                        paths.push(this.current_item.path.model[1].path)
+                        paths.push(this.current_item.path.view[0].path)
+                        paths.push(this.current_item.path.view[1].path)
+                        paths.push(this.current_item.path.language[0].path)
+                        paths.push(this.current_item.path.language[1].path)
+                    }
+                    else {
+                        paths.push(this.current_item.path.controller[0].path)
+                        paths.push(this.current_item.path.model[0].path)
+                        paths.push(this.current_item.path.view[0].path)
+                        paths.push(this.current_item.path.language[0].path)
+                    }
+
+                    if(self.current_item.addToSystem){
+                        paths.push(this.current_item.path.system[0].path)
+                        paths.push(this.current_item.path.system[1].path)
+                        paths.push(this.current_item.path.system[2].path)
+                    }
+                }
+
+                self.current_item.paths = paths.join(',')
+
+                if(self.validateForm()){
+                    self.is_loading = true
+                    $.ajax({
+                        type: "POST",
+                        url : 'index.php?route=tool/extension|addExtension&user_token={{ user_token }}',
+                        data: self.current_item,
+                        encode: true
+                    }).done(function(data) {
+                        self.is_loading = false
+                        if(data.error){
+                            self.error.code = data.error.code
+                            self.error.message = data.error.msg
+                        }
+                        else {
+                            if(self.current_item.extension_id < 0){
+                                self.current_item.extension = ''
+                            }
+                            self.current_item.extension_id = data.data.id
+                            self.extension_group_detail.push(self.current_item)
+                            self.current_item.install.href = "index.php?route=extension/"+self.current_item.type+"|install&user_token={{ user_token }}&extension=opencart&code="+self.current_item.code
+                            self.current_item.uninstall.href = "index.php?route=extension/"+self.current_item.type+"|uninstall&user_token={{ user_token }}&extension=opencart&code="+self.current_item.code
+                            self.current_item.view.href = "index.php?route=extension/opencart/"+self.current_item.type+"/"+self.current_item.code+"&user_token={{ user_token }}"
+                            self.closeForm()
+                        }
+                    }).fail(function(msg) {
+                        console.log(msg)
+                        self.is_loading = false
+                        self.closeForm()
+                    })
+                }
+            },
+            uninstallExtensionGroupDetail:function(item){
+                if(item == null) return
+                const obj = this
+                $.ajax({
+                    type: "GET",
+                    url : decodeURI(item.uninstall.href.replace(/&amp;/g, '&')),
+                    data: {},
+                    encode: true
+                }).done(function(data) {
+                    if(data.error){
+                        obj.showAlert('danger', data.error)
+                    }
+                    else  {
+                        obj.showAlert('primary', data.success)
+                        item.installed = false
+                    }
+                }).fail(function(msg) {
+                    obj.showAlert('danger', msg.responseText)
+                })
+            },
+            installExtensionGroupDetail:function(item){
+                if(item == null) return
+                const obj = this
+                $.ajax({
+                    type: "GET",
+                    url : decodeURI(item.install.href.replace(/&amp;/g, '&')),
+                    data: {},
+                    encode: true
+                }).done(function(data) {
+                   if(data.error){
+                       obj.showAlert('danger', data.error)
+                   }
+                   else  {
+                       obj.showAlert('primary', data.success)
+                       item.installed = true
+                   }
+                }).fail(function(msg) {
+                    obj.showAlert('danger', msg.responseText)
+                })
+            },
+            closeForm : function () {
+                if(this.is_loading == true) return
+                this.current_item = null
+                this.item_to_delete = null
+                this.error.code = 0
+                this.error.message = ''
+                $('#extension-group-detail-form').modal('hide')
+                $('#delete-confirm-box').modal('hide')
+            }
+        },
+        mounted(){
+            this.getExtensionGroupDetail()
+        }
+    }).mount('#extension-group')
+</script>
+{{ footer }}

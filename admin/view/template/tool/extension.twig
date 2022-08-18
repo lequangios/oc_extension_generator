@@ -1,0 +1,260 @@
+{{ header }}{{ column_left }}
+<div id="content">
+    <div id="extension-group">
+        <div class="page-header">
+            <div class="container-fluid">
+                <div class="float-end">
+
+                </div>
+                <h1>{{ heading_title }}</h1>
+                <ol class="breadcrumb">
+                    {% for breadcrumb in breadcrumbs %}
+                        <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-header"></div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover border-primary">
+                            <thead>
+                                <tr>
+                                    <td class="text-start">{{tb_name}}</td>
+                                    <td class="text-start">{{tb_ex_group_code}}</td>
+                                    <td class="text-start">{{tb_author}}</td>
+                                    <td class="text-start">{{tb_version}}</td>
+                                    <td class="text-start">{{tb_link}}</td>
+                                    <td class="text-end">{{ column_action }}</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="item in extension_group">
+                                    <td v-text="item.name"></td>
+                                    <td v-text="item.code"></td>
+                                    <td v-text="item.author"></td>
+                                    <td v-text="item.version"></td>
+                                    <td>
+                                        <a v-bind:href="item.link" v-text="item.link"></a>
+                                    </td>
+                                    <td>
+                                        <a @click="editExtensionGroup(item)" style="margin-right: 5px;"  data-bs-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary pr-2"><i class="fas fa-pencil-alt"></i></a>
+                                        <a v-bind:href="getDetailExtensionGroup(item)" data-bs-toggle="tooltip" title="{{ button_view }}" class="btn btn-primary"><i class="fas fa-eye"></i></a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+{#                    <a @click="editExtensionGroup(null)" class="card-link btn btn-primary"><i class="fas fa-plus"></i></a>#}
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="extension-group-form" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true"><!-- From -->
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content" v-if="current_item">
+                <div class="modal-header"><!-- Begin Modal title -->
+                    <h5 v-if="current_item.extension_install_id >= 0" class="modal-title">{{extension_group_edit}}</h5>
+                    <h5 v-if="current_item.extension_install_id < 0" class="modal-title" >{{extension_group_add_new}}</h5>
+                    <button type="button" @click="closeForm" class="btn-close" aria-label="Close" ></button>
+                </div><!-- End Modal title -->
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <form id="detail-extension-group-form" class="needs-validation mx-auto" novalidate>
+                            <div class="card-body">
+                                <div v-if="error.code > 0" class="alert alert-danger" role="alert" v-text="error.message"></div>
+                                <div class="form-group row mb-4">
+                                    <label class="col-sm-2 col-form-label" for="childZoneName">{{tb_name}}</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control" id="childZoneName" placeholder="" v-model="current_item.name" required>
+                                        <div class="invalid-feedback">{{invalid_name}}</div>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-4">
+                                    <label class="col-sm-2 col-form-label" for=""></label>
+                                    <div class="col-sm-10">
+                                        <div class="form-row row">
+                                            <div class="form-group col-md-6">
+                                                <label class="col-form-label" >{{ extension_id }}</label>
+                                                <input type="number"  class="form-control" v-model="current_item.extension_id" v-bind:disabled="isEdit">
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label class="col-form-label" >{{ extension_download_id }}</label>
+                                                <input type="number"  class="form-control"  v-model="current_item.extension_download_id" v-bind:disabled="isEdit">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-4">
+                                    <label class="col-sm-2 col-form-label" for=""></label>
+                                    <div class="col-sm-10">
+                                        <div class="form-row row">
+                                            <div class="form-group col-md-4">
+                                                <label class="col-form-label" >{{ package_name }}</label>
+                                                <input type="text"  class="form-control" v-model="current_item.package_name" required v-bind:disabled="isEdit">
+                                                <div class="invalid-feedback">{{invalid_package_name}}</div>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label class="col-form-label" >{{ code }}</label>
+                                                <input id="extension-group-code" type="text"  class="form-control"  v-model="current_item.code" required v-bind:disabled="isEdit" >
+                                                <div class="invalid-feedback">{{invalid_code}}</div>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label class="col-form-label" >{{ version }}</label>
+                                                <input type="text"  class="form-control"  v-model="current_item.version" >
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-4">
+                                    <label class="col-sm-2 col-form-label" for=""></label>
+                                    <div class="col-sm-10">
+                                        <div class="form-row row">
+                                            <div class="form-group col-md-6">
+                                                <label class="col-form-label" >{{ author }}</label>
+                                                <input type="text"  class="form-control" v-model="current_item.author">
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label class="col-form-label" >{{ link }}</label>
+                                                <input type="text"  class="form-control"  v-model="current_item.link" >
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-4">
+                                    <label class="col-sm-2 col-form-label" for=""></label>
+                                    <div class="col-sm-10">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input form-control" id="childZoneStatus" v-model="current_item.status" true-value="1" false-value="0">
+                                            <label class="form-check-label" for="childZoneStatus">{{enable_group}}</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" @click="closeForm" class="btn btn-secondary">{{ button_cancel }}</button>
+                    <button type="button" @click="saveExtensionGroup" class="btn btn-primary">
+                        <span v-if="is_loading == false" >{{ button_save }}</span>
+                        <div v-if="is_loading" class="spinner-border spinner-border-sm" role="status"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div><!-- From -->
+    </div>
+</div>
+<script type="text/javascript" src="https://unpkg.com/vue@3"></script>
+<script>
+    const {
+        createApp
+    } = Vue
+    createApp({
+        data() {
+            return {
+                extension_group : [],
+                current_item: null,
+                is_loading:false,
+                error : {
+                    code : 0,
+                    massage: ''
+                }
+            }
+        },
+        computed:{
+            isEdit(){
+                return this.current_item && this.current_item.extension_install_id >= 0
+            }
+        },
+        methods:{
+            validateForm:function(){
+                // Reset
+                document.getElementById('extension-group-code').setCustomValidity('')
+                const form = document.getElementById('detail-extension-group-form')
+                const check = form.checkValidity()
+                if(form.className.search('was-validated') < 0){
+                    form.classList.add('was-validated')
+                }
+                return check
+            },
+            getExtensionGroup:function () {
+                const obj = this
+                $.ajax({
+                    type: "POST",
+                    url : 'index.php?route=tool/extension|getListExtensionGroup&user_token={{ user_token }}',
+                    data: {},
+                    encode: true
+                }).done(function(data) {
+                    obj.extension_group = data
+                }).fail(function(msg) {
+                    console.log(msg)
+                })
+            },
+            getDetailExtensionGroup:function(item){
+                const url = '{{ detail }}'+'&code='+item.code+'&extension_install_id='+item.extension_install_id+'&name='+item.name
+                return decodeURI(url.replace(/&amp;/g, '&'))
+            },
+            editExtensionGroup: function(item){
+                if(item == null){
+                    this.current_item = {
+                        extension_install_id:-1,
+                        extension_id:0,
+                        extension_download_id:0,
+                        name:'',
+                        package_name:'',
+                        code:'',
+                        version:'1.0',
+                        author:'',
+                        link:'',
+                        status:0
+                    }
+                }
+                else this.current_item = item
+                $('#extension-group-form').modal('show')
+            },
+            saveExtensionGroup: function(){
+                const self = this
+                if(self.validateForm()){
+                    self.is_loading = true
+                    $.ajax({
+                        type: "POST",
+                        url : 'index.php?route=tool/extension|addExtensionGroup&user_token={{ user_token }}',
+                        data: self.current_item,
+                        encode: true
+                    }).done(function(data) {
+                        self.is_loading = false
+                        if(data.error){
+                            self.error.code = data.error.code
+                            self.error.message = data.error.msg
+                            document.getElementById('extension-group-code').setCustomValidity('error')
+                        }
+                        else {
+                            if(self.current_item.extension_install_id < 0){
+                                self.current_item.extension_install_id = data.data.id
+                                self.extension_group.push(self.current_item)
+                            }
+                            self.error.code = 0
+                            self.closeForm()
+                        }
+                    }).fail(function(msg) {
+                        console.log(msg)
+                        self.is_loading = false
+                        self.closeForm()
+                    })
+                }
+            },
+            closeForm : function () {
+                if(this.is_loading == true) return
+                this.current_item = null
+                $('#extension-group-form').modal('hide')
+            }
+        },
+        mounted(){
+            this.getExtensionGroup()
+        }
+    }).mount('#extension-group')
+</script>
+{{ footer }}
